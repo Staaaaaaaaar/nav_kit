@@ -22,7 +22,11 @@ add_executable(odom_hub src/odom_hub/odom_hub.cpp)
 ament_target_dependencies(odom_hub
   rclcpp nav_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs)
 
-install(TARGETS imu_integrator odom_hub
+add_executable(loc_hub src/loc_hub/loc_hub.cpp)
+ament_target_dependencies(loc_hub
+  rclcpp nav_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs)
+
+install(TARGETS imu_integrator odom_hub loc_hub
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

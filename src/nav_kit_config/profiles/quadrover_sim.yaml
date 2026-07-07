@@ -3,4 +3,3 @@ topics:
   imu: /imu/data
   lidar: /lidar/points
   odom_wheel: /odom/wheel
-  scan: /scan

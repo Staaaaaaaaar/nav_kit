@@ -37,7 +37,7 @@ def _launch_setup(context, *args, **kwargs):
     if "pointcloud_to_laserscan" in params:
         node_params = params["pointcloud_to_laserscan"].get("ros__parameters", {})
         lidar_topic = topics.get("lidar", "/lidar/points")
-        scan_topic = topics.get("scan", "/scan")
+        scan_topic = node_params.get("output_topic", "/scan")
         nodes.append(
             Node(
                 package="pointcloud_to_laserscan",

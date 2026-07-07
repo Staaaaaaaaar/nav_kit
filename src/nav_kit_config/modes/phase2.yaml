@@ -1,0 +1,5 @@
+# Phase 2 验收：processors + odom_hub + loc_hub
+modules:
+  processors: processors.yaml
+  odom_hub: odom_hub.yaml
+  loc_hub: loc_hub_gazebo.yaml
