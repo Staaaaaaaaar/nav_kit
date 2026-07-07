@@ -1,7 +1,5 @@
-#include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
@@ -21,46 +19,30 @@ public:
     publish_tf_ = declare_parameter<bool>("publish_tf", true);
     odom_frame_ = declare_parameter<std::string>("odom_frame", "odom");
     base_frame_ = declare_parameter<std::string>("base_frame", "base_link");
-    primary_source_ = declare_parameter<std::string>("primary_source", "/odom/wheel");
-    sources_ = declare_parameter<std::vector<std::string>>(
-      "sources", {"/odom/wheel", "/odom/imu"});
+    source_topic_ = declare_parameter<std::string>("source_topic", "");
+    const auto legacy_primary = declare_parameter<std::string>("primary_source", "");
+    if (source_topic_.empty()) {
+      source_topic_ = legacy_primary.empty() ? "/odom/wheel" : legacy_primary;
+    }
 
     publisher_ = create_publisher<nav_msgs::msg::Odometry>(output_topic_, 10);
     if (publish_tf_) {
       tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     }
 
-    for (const auto & topic : sources_) {
-      auto sub = create_subscription<nav_msgs::msg::Odometry>(
-        topic, rclcpp::QoS(10),
-        [this, topic](const nav_msgs::msg::Odometry::SharedPtr msg) {
-          sourceCallback(topic, msg);
-        });
-      subscriptions_.emplace(topic, sub);
-    }
+    source_subscription_ = create_subscription<nav_msgs::msg::Odometry>(
+      source_topic_, rclcpp::QoS(20),
+      std::bind(&OdomHub::sourceCallback, this, std::placeholders::_1));
 
     RCLCPP_INFO(
-      get_logger(), "odom_hub: sources=%zu primary=%s -> %s",
-      sources_.size(), primary_source_.c_str(), output_topic_.c_str());
+      get_logger(), "odom_hub: source=%s -> %s",
+      source_topic_.c_str(), output_topic_.c_str());
   }
 
 private:
-  void sourceCallback(const std::string & topic, const nav_msgs::msg::Odometry::SharedPtr msg)
+  void sourceCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
   {
-    latest_[topic] = *msg;
-
-    const nav_msgs::msg::Odometry * selected = nullptr;
-    if (latest_.count(primary_source_) > 0) {
-      selected = &latest_.at(primary_source_);
-    } else if (!latest_.empty()) {
-      selected = &latest_.begin()->second;
-    }
-
-    if (selected == nullptr) {
-      return;
-    }
-
-    nav_msgs::msg::Odometry out = *selected;
+    nav_msgs::msg::Odometry out = *msg;
     out.header.frame_id = odom_frame_;
     out.child_frame_id = base_frame_;
     publisher_->publish(out);
@@ -82,11 +64,8 @@ private:
   bool publish_tf_{true};
   std::string odom_frame_;
   std::string base_frame_;
-  std::string primary_source_;
-  std::vector<std::string> sources_;
-
-  std::map<std::string, nav_msgs::msg::Odometry> latest_;
-  std::map<std::string, rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr> subscriptions_;
+  std::string source_topic_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr source_subscription_;
 
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr publisher_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
