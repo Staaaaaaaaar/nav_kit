@@ -1,0 +1,5 @@
+footprint: [[0.3, 0.2], [0.3, -0.2], [-0.3, -0.2], [-0.3, 0.2]]
+frames:
+  base: base_link
+  odom: odom
+  map: map

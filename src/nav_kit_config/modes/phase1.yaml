@@ -1,0 +1,4 @@
+# Phase 1 验收：processors + odom_hub
+modules:
+  processors: processors.yaml
+  odom_hub: odom_hub.yaml

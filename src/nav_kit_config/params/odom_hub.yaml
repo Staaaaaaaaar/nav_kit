@@ -1,0 +1,10 @@
+odom_hub:
+  ros__parameters:
+    output_topic: /odom
+    publish_tf: true
+    odom_frame: odom
+    base_frame: base_link
+    primary_source: /odom/wheel
+    sources:
+      - /odom/wheel
+      - /odom/imu
