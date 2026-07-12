@@ -8,3 +8,7 @@ __pycache__/
 .cursor/
 frames_*.gv
 frames_*.pdf
+maps/**/*.pgm
+maps/**/*.yaml
+maps/**/*.data
+maps/**/*.posegraph

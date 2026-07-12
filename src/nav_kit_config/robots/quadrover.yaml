@@ -1,9 +1,0 @@
-footprint: [[0.3, 0.2], [0.3, -0.2], [-0.3, -0.2], [-0.3, 0.2]]
-frames:
-  map: map
-  odom: odom
-  base: base_link
-topics:
-  odom: /odom
-  loc: /loc
-  scan: /scan

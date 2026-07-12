@@ -16,6 +16,7 @@ from config_utils import load_params  # noqa: E402
 def _launch_setup(context, *args, **kwargs):
     params_file = LaunchConfiguration("params_file").perform(context)
     profile_context_yaml = LaunchConfiguration("profile_context_yaml").perform(context)
+    map_path = LaunchConfiguration("map_path").perform(context)
     use_rviz = LaunchConfiguration("use_rviz")
 
     profile_context = yaml.safe_load(profile_context_yaml) if profile_context_yaml else {}
@@ -29,10 +30,9 @@ def _launch_setup(context, *args, **kwargs):
 
     if "slam_toolbox" in params:
         node_params = params["slam_toolbox"].get("ros__parameters", {})
-        topics = profile_context.get("topics", {})
         frames = profile_context.get("frames", {})
-        scan_topic = node_params.get("scan_topic", topics.get("scan", "/scan"))
-        loc_topic = node_params.get("output_topic", "/loc/slam")
+        scan_topic = node_params.pop("scan_topic", "/scan")
+        pose_topic = node_params.pop("output_topic", "/loc/slam")
         node_params.setdefault("map_frame", frames.get("map", "map"))
         node_params.setdefault("odom_frame", frames.get("odom", "odom"))
         node_params.setdefault("base_frame", frames.get("base", "base_link"))
@@ -45,10 +45,13 @@ def _launch_setup(context, *args, **kwargs):
                 parameters=[node_params],
                 remappings=[
                     ("scan", scan_topic),
-                    ("pose", loc_topic),
+                    ("pose", pose_topic),
                 ],
             )
         )
+
+    if map_path:
+        print(f"[slam] map save directory hint: {map_path}")
 
     nodes.append(
         Node(

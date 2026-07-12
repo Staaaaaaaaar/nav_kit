@@ -1,4 +1,5 @@
-# 兼容别名，等同 mapping 模式
+# 2D SLAM 建图：laserscan + interface + slam_toolbox
+# TF：odom→base 由 interface；map→odom 由 slam_toolbox
 map: maps/quadrover/indoor
 modules:
   laserscan: laserscan.yaml

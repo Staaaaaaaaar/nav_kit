@@ -7,7 +7,6 @@ install(DIRECTORY
   profiles
   modes
   params
-  robots
   maps
   rviz
   DESTINATION share/${PROJECT_NAME}

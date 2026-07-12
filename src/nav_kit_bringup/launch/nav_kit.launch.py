@@ -6,6 +6,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import SetParameter
 from ament_index_python.packages import get_package_share_directory
 
 sys.path.insert(0, os.path.join(get_package_share_directory("nav_kit_bringup"), "launch"))
@@ -16,6 +17,7 @@ def _launch_setup(context, *args, **kwargs):
     profile_name = LaunchConfiguration("profile").perform(context)
     mode_name = LaunchConfiguration("mode").perform(context)
     map_override = LaunchConfiguration("map").perform(context)
+    use_rviz = LaunchConfiguration("use_rviz")
 
     profile = load_profile(profile_name)
     mode = load_mode(mode_name)
@@ -28,6 +30,9 @@ def _launch_setup(context, *args, **kwargs):
     bringup_share = get_package_share_directory("nav_kit_bringup")
     actions = []
 
+    if profile.get("use_sim_time"):
+        actions.append(SetParameter(name="use_sim_time", value=True))
+
     for module_name, params_file in mode.get("modules", {}).items():
         launch_file = os.path.join(bringup_share, "launch", f"{module_name}.launch.py")
         if not os.path.isfile(launch_file):
@@ -39,6 +44,8 @@ def _launch_setup(context, *args, **kwargs):
         }
         if map_path:
             launch_arguments["map_path"] = map_path
+        if module_name == "slam":
+            launch_arguments["use_rviz"] = use_rviz
 
         actions.append(
             IncludeLaunchDescription(
@@ -56,6 +63,7 @@ def generate_launch_description():
             DeclareLaunchArgument("mode", default_value="phase1"),
             DeclareLaunchArgument("profile", default_value="quadrover_sim"),
             DeclareLaunchArgument("map", default_value=""),
+            DeclareLaunchArgument("use_rviz", default_value="true"),
             OpaqueFunction(function=_launch_setup),
         ]
     )

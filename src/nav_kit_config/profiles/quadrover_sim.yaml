@@ -1,14 +1,6 @@
-robot: quadrover
-inputs:
-  imu:
-    topic: /imu/data
-    type: imu
-  odom:
-    topic: /odom/wheel
-    type: odometry
-  lidar:
-    topic: /lidar/points
-    type: pointcloud2
-  loc:
-    topic: /loc/gazebo
-    type: odometry
+use_sim_time: true
+footprint: [[0.3, 0.2], [0.3, -0.2], [-0.3, -0.2], [-0.3, 0.2]]
+frames:
+  map: map
+  odom: odom
+  base: base_link
