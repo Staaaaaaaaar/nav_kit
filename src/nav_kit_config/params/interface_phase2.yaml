@@ -1,0 +1,17 @@
+topic_relay_odom:
+  ros__parameters:
+    input_key: odom
+    msg_type: odometry
+    output_topic_key: odom
+    parent_frame_key: odom
+    child_frame_key: base
+    publish_tf: odom_base
+
+topic_relay_loc:
+  ros__parameters:
+    input_key: loc
+    msg_type: odometry
+    output_topic_key: loc
+    parent_frame_key: map
+    child_frame_key: base
+    publish_tf: map_odom

@@ -41,9 +41,7 @@ check_hz() {
 fail=0
 check_topic /odom/wheel || fail=1
 check_topic /lidar/points || fail=1
-check_topic /imu/data || fail=1
 check_topic /odom || fail=1
-check_topic /odom/imu || fail=1
 
 echo ""
 echo "Checking /scan (this command also activates pointcloud_to_laserscan)..."

@@ -8,25 +8,18 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(nav_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
-add_executable(imu_integrator src/processors/imu_integrator.cpp)
-ament_target_dependencies(imu_integrator
-  rclcpp nav_msgs sensor_msgs geometry_msgs tf2 tf2_geometry_msgs)
+include_directories(include)
 
-add_executable(odom_hub src/odom_hub/odom_hub.cpp)
-ament_target_dependencies(odom_hub
+add_executable(topic_relay src/interface/topic_relay.cpp)
+ament_target_dependencies(topic_relay
   rclcpp nav_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs)
 
-add_executable(loc_hub src/loc_hub/loc_hub.cpp)
-ament_target_dependencies(loc_hub
-  rclcpp nav_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs)
-
-install(TARGETS imu_integrator odom_hub loc_hub
+install(TARGETS topic_relay
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

@@ -1,61 +1,19 @@
 # nav_kit
 
-可配置的 ROS 2 Humble 导航工具箱（双 Hub：odom_hub + loc_hub）。
+可配置的 ROS 2 Humble **2D 导航**工具箱。自研层仅负责**话题与 frame 规范化**；点云转激光等转换通过依赖包按需启用。里程计由外部环境或独立节点提供，nav_kit 不做传感器融合。
 
 ## 前提
 
 - Ubuntu 22.04
 - [ROS 2 Humble](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html)（`/opt/ros/humble`）
-- 仿真或实车需单独提供传感器与 `/odom/wheel`（如 [quadrover_simulation](file:///home/sam/quadrover_simulation)）
+- 仿真：[quadrover_simulation](file:///home/sam/quadrover_simulation) 提供轮速里程计 + 点云
+- 真机：IMU + 点云，由**独立里程计节点**订阅传感器后发布 `/odom/estimator`（话题名可在 profile 中配置）
 
 ## 依赖安装
 
 ```bash
-./scripts/install_deps.sh          # Phase 1（默认）
-./scripts/install_deps.sh --all    # 含后续 amcl / slam / rtk / nav2 规划依赖
+./scripts/install_deps.sh
 ```
-
-## 依赖清单
-
-### 构建工具
-
-| apt 包 | 用途 |
-|--------|------|
-| `python3-colcon-common-extensions` | `colcon build` |
-| `ros-humble-ament-cmake` | CMake 构建 |
-
-### Phase 1 — `nav_kit` 节点
-
-| apt 包 | 用途 |
-|--------|------|
-| `ros-humble-rclcpp` | C++ 节点运行时 |
-| `ros-humble-nav-msgs` | `Odometry` 等 |
-| `ros-humble-sensor-msgs` | `Imu` 等 |
-| `ros-humble-geometry-msgs` | 位姿/四元数 |
-| `ros-humble-tf2` | TF 数学 |
-| `ros-humble-tf2-ros` | TF 广播 |
-| `ros-humble-tf2-geometry-msgs` | 消息转换 |
-
-### Phase 1 — `nav_kit_bringup` 启动与 processors
-
-| apt 包 | 用途 |
-|--------|------|
-| `ros-humble-launch` | launch 系统 |
-| `ros-humble-launch-ros` | ROS 节点 launch |
-| `ros-humble-ament-index-python` | 查找 `nav_kit_config` 等资源 |
-| `python3-yaml` | `config_utils.py` 读 YAML |
-| `ros-humble-pointcloud-to-laserscan` | 3D 点云 → `/scan`（**Phase 1 启动必需**） |
-| `ros-humble-laser-geometry` | pointcloud_to_laserscan 依赖 |
-| `ros-humble-tf2-sensor-msgs` | pointcloud_to_laserscan 依赖 |
-
-### 后续 Phase（`install_deps.sh --all`）
-
-| apt 包 | 计划用途 |
-|--------|----------|
-| `ros-humble-navigation2` / `ros-humble-nav2-bringup` | Phase 3+ 室内/室外导航 |
-| `ros-humble-slam-toolbox` | Phase 4 建图与定位 |
-| `ros-humble-robot-localization` | Phase 5 RTK / EKF |
-| `ros-humble-rviz2` | Phase 6 可视化 |
 
 ## 构建
 
@@ -64,18 +22,65 @@
 source install/setup.bash
 ```
 
-## Phase 1 启动（processors + odom_hub）
+## 架构
 
-先启动仿真（或实车驱动），再：
+```text
+外部环境（仿真 / 真机驱动 / 里程计节点）
+    ↓ profiles.inputs（话题映射）
+[可选] laserscan（pointcloud_to_laserscan，2D /scan）
+    ↓
+interface（topic_relay：frame 重写 + TF）
+    ↓ 规范接口 /odom /scan /loc
+slam / amcl / nav2（2D 导航依赖包）
+```
+
+### 配置分层
+
+| 层级 | 职责 |
+|------|------|
+| `robots/*.yaml` | footprint、标准 frame、规范输出话题 |
+| `profiles/*.yaml` | 外部环境 inputs（仿真/真机差异） |
+| `modes/*.yaml` | 启停模块 + params 文件 |
+| `params/*.yaml` | 依赖包与 topic_relay 行为 |
+
+### 仿真 vs 真机 profile
+
+| 输入 | `quadrover_sim` | `quadrover_real` |
+|------|-----------------|------------------|
+| IMU | `/imu/data` | `/imu/data` |
+| 激光 | `/lidar/points`（pointcloud2 → laserscan） | `/lidar/points`（同上） |
+| 里程计 | `/odom/wheel`（仿真轮速） | `/odom/estimator`（外部节点输出） |
+| 全局定位 | `/loc/gazebo`（phase2） | 暂未配置 |
+
+### 模块说明
+
+| 模块 | 类型 | 作用 |
+|------|------|------|
+| `laserscan` | 依赖包 | 3D 点云 → 2D `/scan`（`inputs.lidar.type: pointcloud2` 时启用） |
+| `interface` | 自研 | `topic_relay`：中继 + 统一 frame + TF |
+| `slam` | 依赖包 | `slam_toolbox` 2D 建图 |
+
+### 标准内部接口（2D 导航）
+
+| 话题 | 类型 | frame |
+|------|------|-------|
+| `/odom` | Odometry | `odom` → `base_link` |
+| `/scan` | LaserScan | `base_link` |
+| `/loc` | Odometry | `map` → `base_link` |
+
+## 启动
+
+先启动仿真或真机驱动（及里程计节点），再：
 
 ```bash
+# 仿真 Phase 1
 ros2 launch nav_kit_bringup nav_kit.launch.py mode:=phase1 profile:=quadrover_sim
+
+# 真机 Phase 1（需外部里程计节点已发布 /odom/estimator）
+ros2 launch nav_kit_bringup nav_kit.launch.py mode:=phase1 profile:=quadrover_real
 ```
 
 验收：
-
-- 话题：`/odom/imu`、`/scan`、`/odom`
-- TF：`odom → base_link`
 
 ```bash
 ros2 topic list | grep -E 'odom|scan'
@@ -83,46 +88,18 @@ ros2 run tf2_ros tf2_echo odom base_link
 ./scripts/phase1_verify.sh
 ```
 
-### `/scan` 与 rqt 中看不到 `/lidar/points` 订阅
+### `/scan` 懒订阅
 
-`pointcloud_to_laserscan`（上游包）采用**懒订阅**：只有当 **`/scan` 已有订阅者** 时，才会订阅 `/lidar/points`。仅打开 rqt_graph 而不订阅 `/scan` 时，图上不会显示对点云的订阅，这是正常现象。
+`pointcloud_to_laserscan` 仅当 `/scan` 有订阅者时才订阅点云。运行 `ros2 topic hz /scan` 或打开 RViz 即可触发。
 
-触发转换并验收：
+### RViz QoS
 
-```bash
-ros2 topic hz /scan          # 或 RViz 添加 LaserScan 显示 /scan
-ros2 topic hz /lidar/points  # 此时应能看到 pointcloud_to_laserscan 在订阅
-```
-
-后续 AMCL / SLAM 启动后会订阅 `/scan`，无需额外处理。
-
-### RViz 中 `/scan` 不显示
-
-终端若出现 `incompatible QoS ... RELIABILITY_QOS_POLICY`，原因是：
-
-| 端 | QoS |
-|----|-----|
-| `pointcloud_to_laserscan` 发布 `/scan` | **Best Effort**（传感器默认） |
-| RViz LaserScan 手动添加时 | **Reliable**（RViz 默认） |
-
-二者不匹配时，RViz **收不到任何数据**（即使 launch 日志显示已启动 pointcloud 订阅）。
-
-**推荐**：使用已配好 QoS 的配置文件：
-
-```bash
-rviz2 -d $(ros2 pkg prefix nav_kit_config)/share/nav_kit_config/rviz/phase1.rviz
-```
-
-**或**在 RViz 中手动添加 LaserScan → Topic 设为 `/scan` → **Reliability Policy 改为 Best Effort**。Fixed Frame 用 `base_link`（或 `odom`）。
+`/scan` 为 **Best Effort**。使用 `rviz/phase1.rviz`，或手动将 LaserScan Reliability 改为 Best Effort。
 
 ## 故障排除
 
 ### `ros-humble-pointcloud-to-laserscan` 安装 404
 
-本地 apt 索引可能仍指向已下架的 deb 版本（例如 `...20260422...`），而官方仓库已发布新版本。重新运行：
-
 ```bash
 ./scripts/install_deps.sh
 ```
-
-脚本会清除 ROS 源缓存、强制 `apt update`，若仍失败则从 `packages.ros.org` 拉取当前 deb 直接安装。

@@ -3,12 +3,9 @@ inputs:
   imu:
     topic: /imu/data
     type: imu
-  odom:
-    topic: /odom/wheel
-    type: odometry
   lidar:
     topic: /lidar/points
     type: pointcloud2
-  loc:
-    topic: /loc/gazebo
+  odom:
+    topic: /odom/estimator
     type: odometry

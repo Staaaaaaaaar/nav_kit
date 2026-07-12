@@ -1,0 +1,6 @@
+# Phase 3（SLAM 建图）：laserscan + interface + slam
+# map→odom 由 slam_toolbox 发布（建图验收）；定位模式可改用 interface_mapping + transform_publish: false
+modules:
+  laserscan: laserscan.yaml
+  interface: interface_phase1.yaml
+  slam: slam_mapping.yaml

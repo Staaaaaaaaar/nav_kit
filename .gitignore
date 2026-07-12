@@ -5,3 +5,6 @@ log/
 __pycache__/
 .vscode/
 .idea/
+.cursor/
+frames_*.gv
+frames_*.pdf

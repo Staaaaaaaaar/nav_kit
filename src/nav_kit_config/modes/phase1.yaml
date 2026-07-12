@@ -1,4 +1,4 @@
-# Phase 1 验收：processors + odom_hub
+# Phase 1：laserscan + interface（/scan + /odom + odom→base TF）
 modules:
-  processors: processors.yaml
-  odom_hub: odom_hub.yaml
+  laserscan: laserscan.yaml
+  interface: interface_phase1.yaml

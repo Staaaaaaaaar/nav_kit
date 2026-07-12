@@ -39,6 +39,71 @@ def load_params(params_file: str) -> dict[str, Any]:
     return load_yaml(params_path)
 
 
+def profile_context_yaml(profile: dict[str, Any]) -> str:
+    return yaml.dump(
+        {
+            "inputs": profile.get("inputs", {}),
+            "frames": profile.get("frames", {}),
+            "topics": profile.get("topics", {}),
+        },
+        default_flow_style=True,
+    )
+
+
+def _input_spec(inputs: dict[str, Any], input_key: str) -> dict[str, Any]:
+    spec = inputs.get(input_key, {})
+    if isinstance(spec, str):
+        return {"topic": spec}
+    return spec if isinstance(spec, dict) else {}
+
+
+def apply_interface_context(
+    relay_params: dict[str, Any],
+    profile_context: dict[str, Any],
+) -> dict[str, Any]:
+    """Inject profile inputs and robot frames/topics into topic_relay parameters."""
+    inputs = profile_context.get("inputs", {})
+    frames = profile_context.get("frames", {})
+    topics = profile_context.get("topics", {})
+    merged = dict(relay_params)
+
+    input_key = merged.get("input_key")
+    if input_key and not merged.get("input_topic"):
+        spec = _input_spec(inputs, input_key)
+        if spec.get("topic"):
+            merged["input_topic"] = spec["topic"]
+
+    output_key = merged.get("output_topic_key")
+    if output_key and not merged.get("output_topic"):
+        if topics.get(output_key):
+            merged["output_topic"] = topics[output_key]
+
+    parent_key = merged.pop("parent_frame_key", None)
+    child_key = merged.pop("child_frame_key", None)
+    if parent_key:
+        merged.setdefault("parent_frame", frames.get(parent_key, parent_key))
+    if child_key:
+        merged.setdefault("child_frame", frames.get(child_key, child_key))
+
+    merged.setdefault("map_frame", frames.get("map", "map"))
+    merged.setdefault("odom_frame", frames.get("odom", "odom"))
+
+    if merged.get("publish_tf") == "map_odom" and not merged.get("odom_topic"):
+        merged["odom_topic"] = topics.get("odom", "/odom")
+
+    return merged
+
+
+def get_input_topic(profile_context: dict[str, Any], input_key: str, default: str = "") -> str:
+    spec = _input_spec(profile_context.get("inputs", {}), input_key)
+    return spec.get("topic", default)
+
+
+def get_input_type(profile_context: dict[str, Any], input_key: str, default: str = "") -> str:
+    spec = _input_spec(profile_context.get("inputs", {}), input_key)
+    return spec.get("type", default)
+
+
 def resolve_map_path(map_value: str | None) -> str:
     if not map_value:
         return ""

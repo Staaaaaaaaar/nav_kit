@@ -1,0 +1,8 @@
+topic_relay_loc:
+  ros__parameters:
+    input_topic: /loc/slam
+    msg_type: pose
+    output_topic_key: loc
+    parent_frame_key: map
+    child_frame_key: base
+    publish_tf: none

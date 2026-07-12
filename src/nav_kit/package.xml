@@ -3,7 +3,7 @@
 <package format="3">
   <name>nav_kit</name>
   <version>0.1.0</version>
-  <description>nav_kit core nodes: processors, odom_hub, loc_hub</description>
+  <description>nav_kit interface relay nodes for topic and frame normalization</description>
   <maintainer email="sam@todo.todo">sam</maintainer>
   <license>Apache-2.0</license>
 
@@ -11,7 +11,6 @@
 
   <depend>rclcpp</depend>
   <depend>nav_msgs</depend>
-  <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>

@@ -1,5 +1,4 @@
-# Phase 2 验收：processors + odom_hub + loc_hub
+# Phase 2：laserscan + interface（+ /loc + map→odom TF）
 modules:
-  processors: processors.yaml
-  odom_hub: odom_hub.yaml
-  loc_hub: loc_hub_gazebo.yaml
+  laserscan: laserscan.yaml
+  interface: interface_phase2.yaml
