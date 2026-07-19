@@ -17,6 +17,8 @@ from config_utils import params_file_path  # noqa: E402
 def _launch_setup(context, *args, **kwargs):
     params_file = LaunchConfiguration("params_file").perform(context)
     profile_context_yaml = LaunchConfiguration("profile_context_yaml").perform(context)
+    rviz_config_file = LaunchConfiguration("rviz_config").perform(context) or "nav_known_map.rviz"
+    use_rviz_val = LaunchConfiguration("use_rviz").perform(context)
     use_rviz = LaunchConfiguration("use_rviz")
 
     profile_context = yaml.safe_load(profile_context_yaml) if profile_context_yaml else {}
@@ -27,8 +29,10 @@ def _launch_setup(context, *args, **kwargs):
     rviz_config = os.path.join(
         get_package_share_directory("nav_kit_config"),
         "rviz",
-        "nav_known_map.rviz",
+        rviz_config_file,
     )
+    if not os.path.isfile(rviz_config):
+        raise RuntimeError(f"RViz config not found: {rviz_config}")
 
     actions = [
         IncludeLaunchDescription(
@@ -47,6 +51,10 @@ def _launch_setup(context, *args, **kwargs):
             condition=IfCondition(use_rviz),
         ),
     ]
+    if use_rviz_val.lower() not in ("true", "1", "yes"):
+        print("[nav2] RViz disabled (use_rviz:=false)")
+    else:
+        print(f"[nav2] RViz config: {rviz_config}")
     return actions
 
 
@@ -57,6 +65,7 @@ def generate_launch_description():
             DeclareLaunchArgument("profile_context_yaml", default_value="{}"),
             DeclareLaunchArgument("map_path", default_value=""),
             DeclareLaunchArgument("use_rviz", default_value="true"),
+            DeclareLaunchArgument("rviz_config", default_value="nav_known_map.rviz"),
             OpaqueFunction(function=_launch_setup),
         ]
     )

@@ -17,7 +17,6 @@ slam_toolbox:
     minimum_travel_heading: 0.03
     throttle_scans: 1
     tf_buffer_duration: 30.0
-    map_file_name: quadrover_indoor
     qos_overrides:
       /scan:
         subscription:

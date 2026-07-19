@@ -1,5 +1,6 @@
 # 已知地图导航：laserscan + interface + AMCL + Nav2
-map: maps/example/my_map
+map: maps/example/map
+rviz_config: nav_known_map.rviz
 modules:
   laserscan: laserscan.yaml
   interface: interface_nav.yaml

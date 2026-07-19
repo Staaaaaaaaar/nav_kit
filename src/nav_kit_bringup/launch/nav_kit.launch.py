@@ -21,7 +21,7 @@ def _launch_setup(context, *args, **kwargs):
     profile_name = LaunchConfiguration("profile").perform(context)
     mode_name = LaunchConfiguration("mode").perform(context)
     map_override = LaunchConfiguration("map").perform(context)
-    use_rviz = LaunchConfiguration("use_rviz")
+    use_rviz_val = LaunchConfiguration("use_rviz").perform(context)
     use_sim_time = _parse_bool(LaunchConfiguration("use_sim_time").perform(context))
 
     profile = load_profile(profile_name)
@@ -32,6 +32,9 @@ def _launch_setup(context, *args, **kwargs):
 
     bringup_share = get_package_share_directory("nav_kit_bringup")
     actions = []
+    module_names = list(mode.get("modules", {}).keys())
+    has_nav2 = "nav2" in module_names
+    rviz_config = mode.get("rviz_config", "")
 
     if use_sim_time:
         actions.append(SetParameter(name="use_sim_time", value=True))
@@ -47,8 +50,14 @@ def _launch_setup(context, *args, **kwargs):
         }
         if map_path:
             launch_arguments["map_path"] = map_path
-        if module_name in ("slam", "nav2"):
-            launch_arguments["use_rviz"] = use_rviz
+        if module_name == "slam":
+            launch_arguments["use_rviz"] = "false" if has_nav2 else use_rviz_val
+            if rviz_config and not has_nav2:
+                launch_arguments["rviz_config"] = rviz_config
+        elif module_name == "nav2":
+            launch_arguments["use_rviz"] = use_rviz_val
+            if rviz_config:
+                launch_arguments["rviz_config"] = rviz_config
 
         actions.append(
             IncludeLaunchDescription(

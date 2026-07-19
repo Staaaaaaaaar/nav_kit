@@ -18,6 +18,7 @@ def _launch_setup(context, *args, **kwargs):
     profile_context_yaml = LaunchConfiguration("profile_context_yaml").perform(context)
     map_path = LaunchConfiguration("map_path").perform(context)
     use_rviz = LaunchConfiguration("use_rviz")
+    rviz_config_file = LaunchConfiguration("rviz_config").perform(context) or "slam_mapping.rviz"
 
     profile_context = yaml.safe_load(profile_context_yaml) if profile_context_yaml else {}
     params = load_params(params_file)
@@ -25,7 +26,7 @@ def _launch_setup(context, *args, **kwargs):
     rviz_config = os.path.join(
         get_package_share_directory("nav_kit_config"),
         "rviz",
-        "slam_mapping.rviz",
+        rviz_config_file,
     )
 
     if "slam_toolbox" in params:
@@ -74,6 +75,7 @@ def generate_launch_description():
             DeclareLaunchArgument("profile_context_yaml", default_value="{}"),
             DeclareLaunchArgument("map_path", default_value=""),
             DeclareLaunchArgument("use_rviz", default_value="true"),
+            DeclareLaunchArgument("rviz_config", default_value="slam_mapping.rviz"),
             OpaqueFunction(function=_launch_setup),
         ]
     )

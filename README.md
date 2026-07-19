@@ -1,20 +1,14 @@
 # nav_kit
 
-可配置的 ROS 2 Humble **2D 导航**工具箱。自研层仅负责**话题与 frame 规范化**；点云转激光、SLAM、AMCL、Nav2 等通过依赖包按需启用。里程计由外部环境或独立节点提供，nav_kit 不做传感器融合。
+可配置的 ROS 2 Humble **2D 导航**工具箱。自研层仅负责**话题与 frame 规范化**；点云转激光、SLAM、AMCL、Nav2 等通过依赖包按需启用。
 
 ## 功能模式
 
-| mode | 用途 | 模块 |
-|------|------|------|
-| `mapping` | SLAM 建图 | laserscan + interface + slam |
-| `known_map_nav` | 已知地图导航 | laserscan + interface + amcl + nav2 |
-
-## 前提
-
-- Ubuntu 22.04
-- [ROS 2 Humble](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html)
-- 仿真：[quadrover_simulation](file:///home/sam/quadrover_simulation)（轮速里程计 `/odom/wheel`、真值 `/loc/gazebo`、点云 `/lidar/points`）
-- 真机：独立里程计节点（如 `/odom/estimator`）+ 点云
+| mode | 用途 | 定位 | 模块 |
+|------|------|------|------|
+| `mapping` | SLAM 建图 | slam_toolbox | laserscan + interface + slam |
+| `unknown_map_nav` | 未知地图导航 | slam_toolbox | laserscan + interface + slam + nav2 |
+| `known_map_nav` | 已知地图导航 | AMCL | laserscan + interface + amcl + nav2 |
 
 ## 快速开始
 
@@ -23,6 +17,8 @@
 ./scripts/build.sh
 source install/setup.bash
 ```
+
+先启动仿真或真机驱动，再 launch 对应 mode。
 
 ## 架构
 
@@ -40,139 +36,130 @@ slam / amcl / nav2
 
 | 模式 | odom→base_link | map→odom |
 |------|----------------|----------|
-| `mapping` | interface | slam_toolbox |
+| `mapping` / `unknown_map_nav` | interface | slam_toolbox |
 | `known_map_nav` | interface | AMCL |
 
-`map` 与 `odom` 帧不可由两个模块同时发布，建图与有图导航不要同时运行。
+`map→odom` 只能由一个模块发布：**slam_toolbox 与 AMCL 不可同时运行**。
 
 ### 配置分层
 
-| 层级 | 路径 | 职责 |
-|------|------|------|
-| profile | `profiles/quadrover.yaml` | footprint、frames |
-| mode | `modes/*.yaml` | 启停模块、params 文件、默认地图 |
-| params | `params/*.yaml` | 话题、frame、算法参数 |
-| launch | `use_sim_time` | 仿真 `true`（默认），真机 `false` |
+| 层级 | 职责 |
+|------|------|
+| `profiles/quadrover.yaml` | footprint、frames |
+| `modes/*.yaml` | 模块列表、params、`rviz_config`、默认地图路径 |
+| `params/*.yaml` | 话题、frame、算法参数 |
+| launch `use_sim_time` | 仿真 `true`（默认），真机 `false` |
 
-### profile 示例（`profiles/quadrover.yaml`）
+### params 一览
 
-```yaml
-footprint: [[0.3, 0.2], [0.3, -0.2], [-0.3, -0.2], [-0.3, 0.2]]
-frames:
-  map: map
-  odom: odom
-  base: base_link
-```
+| 文件 | 用于 |
+|------|------|
+| `laserscan.yaml` | 点云→`/scan` |
+| `interface_mapping.yaml` | 建图 / 未知地图导航 |
+| `interface_nav.yaml` | 已知地图导航 |
+| `slam_mapping.yaml` | slam_toolbox（建图与未知地图导航共用） |
+| `amcl_indoor.yaml` | AMCL + map_server |
+| `nav2_indoor.yaml` | Nav2 规划与控制 |
 
-### params 文件
-
-| 文件 | 模块 | 内容 |
-|------|------|------|
-| `laserscan.yaml` | laserscan | 点云→激光 |
-| `interface_mapping.yaml` | interface | 建图：odom 中继 + `/loc` 中继 |
-| `interface_nav.yaml` | interface | 导航：odom 中继 + `odom→base` TF |
-| `slam_mapping.yaml` | slam | slam_toolbox |
-| `amcl_indoor.yaml` | amcl | AMCL + map_server |
-| `nav2_indoor.yaml` | nav2 | 规划、控制、代价地图 |
-
-仿真与真机差异：修改 `interface_*.yaml` 中的 `input_topic`（仿真默认 `/odom/wheel`）。
+仿真与真机差异：修改 `interface_*.yaml` 中的 `input_topic`。
 
 ### 地图文件
 
-`src/nav_kit_config/maps/` **整目录已 gitignore**，用于存放本地地图，不入库。
+`src/nav_kit_config/maps/` 已 **gitignore**，本地存放，不入库。
 
 ```bash
 mkdir -p src/nav_kit_config/maps/example
-# 导航：放置 Nav2 占用栅格 my_map.yaml + my_map.pgm
-# 建图：save_map.sh 写入序列图 *.posegraph / *.data
+# 已知地图导航：map.yaml + map.pgm
+# 建图保存：maps/slam/*.posegraph / *.data
 ```
 
 | 用途 | 格式 | 默认路径 |
 |------|------|----------|
-| SLAM 建图保存 | `.posegraph` + `.data` | `maps/slam/`（`save_map.sh`） |
-| 已知地图导航 | `.yaml` + `.pgm` | `maps/example/my_map`（mode 默认） |
+| SLAM 序列图 | `.posegraph` + `.data` | `maps/slam/` |
+| 已知地图导航 | `.yaml` + `.pgm` | `maps/example/map` |
 
-建图序列图需转换为 Nav2 栅格后用于 `known_map_nav`。launch 可覆盖：`map:=maps/example/my_map`。
-
-## 启动
-
-先启动仿真或真机，再：
+## 启动命令
 
 ```bash
-# SLAM 建图（仿真，use_sim_time 默认 true）
+# 建图
 ros2 launch nav_kit_bringup nav_kit.launch.py mode:=mapping
+
+# 未知地图导航（SLAM 定位 + Nav2）
+ros2 launch nav_kit_bringup nav_kit.launch.py mode:=unknown_map_nav
 
 # 已知地图导航
 ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav
 
-# 指定地图
-ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav map:=maps/example/my_map
+# 指定已知地图
+ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav map:=maps/example/map
 
 # 真机
-ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav use_sim_time:=false
+ros2 launch nav_kit_bringup nav_kit.launch.py mode:=unknown_map_nav use_sim_time:=false
 ```
 
-`profile` 默认为 `quadrover`，一般无需指定。关闭 RViz：`use_rviz:=false`
+可选参数：`use_rviz:=false`、`profile:=quadrover`（默认）
 
-### 建图流程
+### 建图
 
-1. 启动仿真 + `mapping`
-2. 遥控机器人覆盖环境
-3. `./scripts/mapping_verify.sh` 检查话题
-4. `./scripts/save_map.sh` 保存序列图
+1. 启动 `mapping`，遥控覆盖环境
+2. `./scripts/save_map.sh` 保存 SLAM 序列图
 
-### 导航流程
+### 未知地图导航
 
-1. 准备 Nav2 格式地图（`.yaml` + `.pgm`）于 `maps/` 下
-2. 启动仿真 + `known_map_nav`
-3. RViz **2D Pose Estimate** 设置初始位姿，等待 AMCL 粒子收敛
-4. **Nav2 Goal** 发送目标点
-5. `./scripts/nav_verify.sh` 检查基础话题与 Nav2 状态
+1. 启动 `unknown_map_nav`
+2. 遥控移动一段，SLAM 建立初始 `/map` 与 `map→odom`
+3. 在**已探索区域**发送 Nav2 Goal
+4. 无需 2D Pose Estimate
 
-**注意：** `/loc/gazebo` 是 `map→base_link` 真值，不能代替 `/odom/wheel` 直接接入 AMCL 的 odom 输入，否则 scan 与 map 会不匹配。
+### 已知地图导航
 
-## 验收脚本
+1. 准备 `maps/example/map.yaml` + `map.pgm`
+2. 启动 `known_map_nav`
+3. RViz **2D Pose Estimate** 设置初始位姿
+4. 发送 Nav2 Goal
 
-```bash
-./scripts/mapping_verify.sh   # 建图模式
-./scripts/nav_verify.sh       # 导航模式
-./scripts/save_map.sh         # 保存 SLAM 序列图
-```
+## 脚本
+
+| 脚本 | 作用 |
+|------|------|
+| `install_deps.sh` | 安装 apt 依赖 |
+| `build.sh` | colcon 编译 |
+| `save_map.sh` | 保存 SLAM 序列图 |
 
 ## 常见问题
 
 ### `/scan` 无数据
 
-`pointcloud_to_laserscan` 懒订阅：仅当 `/scan` 有订阅者时才读点云。打开 RViz 或 `ros2 topic hz /scan` 即可触发。
+`pointcloud_to_laserscan` 懒订阅：打开 RViz 或 `ros2 topic hz /scan` 触发。
 
-### RViz 中 LaserScan 不显示
+### RViz LaserScan 不显示
 
-`/scan` 为 **Best Effort**。使用 `rviz/slam_mapping.rviz` 或 `rviz/nav_known_map.rviz`，或将 LaserScan Reliability 设为 Best Effort。
+`/scan` 为 Best Effort。使用 mode 对应的 `rviz_config`，或手动将 Reliability 改为 Best Effort。
 
-### AMCL 不定位 / Nav2 不 ready
+### RViz 未弹出（unknown_map_nav）
 
-必须先 **2D Pose Estimate**。未设初始位姿时 AMCL 不发布 `map→odom`，global_costmap 无法激活，planner 会卡在 Activating。
+修改 launch 后需重新 `colcon build` 并 `source install/setup.bash`。
 
-```bash
-ros2 topic echo /amcl_pose --once
-ros2 run tf2_ros tf2_echo map odom
-ros2 lifecycle get /bt_navigator   # 期望 active [3]
-```
+### AMCL 不定位
 
-### 依赖安装 404
+必须先 **2D Pose Estimate**，等待 AMCL 发布 `map→odom` 后再发 Goal。
 
-```bash
-./scripts/install_deps.sh
-```
+### Goal 到达精度
+
+在 `nav2_indoor.yaml` 的 `general_goal_checker` 中调整 `xy_goal_tolerance`（米）与 `yaw_goal_tolerance`（弧度）。
+
+### `/loc/gazebo` 误用
+
+`/loc/gazebo` 是 `map→base_link` 真值，不能作为 AMCL 的 odom 输入；已知地图导航应使用 `/odom/wheel`（见 `interface_nav.yaml`）。
 
 ## 仓库结构
 
 ```text
 nav_kit/
-├── scripts/           # 构建、依赖、验收、存图
+├── scripts/              # install / build / save_map
 ├── src/
-│   ├── nav_kit/       # topic_relay（C++）
-│   ├── nav_kit_bringup/   # launch
-│   └── nav_kit_config/    # profiles / modes / params / maps / rviz
+│   ├── nav_kit/          # topic_relay
+│   ├── nav_kit_bringup/  # launch
+│   └── nav_kit_config/   # profiles / modes / params / rviz
 └── README.md
 ```
