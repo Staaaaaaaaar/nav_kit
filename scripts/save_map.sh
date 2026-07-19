@@ -14,8 +14,8 @@ elif [ -f /opt/ros/humble/setup.bash ]; then
   source /opt/ros/humble/setup.bash
 fi
 
-MAP_NAME="${1:-quadrover_indoor}"
-MAP_DIR="${2:-$(ros2 pkg prefix nav_kit_config)/share/nav_kit_config/maps/quadrover/indoor}"
+MAP_NAME="${1:-slam}"
+MAP_DIR="${2:-$(ros2 pkg prefix nav_kit_config)/share/nav_kit_config/maps/slam}"
 
 mkdir -p "$MAP_DIR"
 SAVE_PATH="${MAP_DIR}/${MAP_NAME}"

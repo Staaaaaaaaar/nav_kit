@@ -79,12 +79,20 @@ frames:
 
 ### 地图文件
 
-用户地图保存在 `src/nav_kit_config/maps/`（`*.pgm` / `*.yaml` 已 gitignore，仅本地保留）。
+`src/nav_kit_config/maps/` **整目录已 gitignore**，用于存放本地地图，不入库。
 
-- 建图：`./scripts/save_map.sh` 保存 slam_toolbox 序列图（`.posegraph` / `.data`）
-- 导航：AMCL / map_server 需要 Nav2 格式占用栅格（`.yaml` + `.pgm`），需从建图结果导出或单独保存
+```bash
+mkdir -p src/nav_kit_config/maps/example
+# 导航：放置 Nav2 占用栅格 my_map.yaml + my_map.pgm
+# 建图：save_map.sh 写入序列图 *.posegraph / *.data
+```
 
-默认 `known_map_nav` 地图路径：`maps/my_map`（本地需自备 `my_map.yaml` + `my_map.pgm`）。
+| 用途 | 格式 | 默认路径 |
+|------|------|----------|
+| SLAM 建图保存 | `.posegraph` + `.data` | `maps/slam/`（`save_map.sh`） |
+| 已知地图导航 | `.yaml` + `.pgm` | `maps/example/my_map`（mode 默认） |
+
+建图序列图需转换为 Nav2 栅格后用于 `known_map_nav`。launch 可覆盖：`map:=maps/example/my_map`。
 
 ## 启动
 
@@ -98,7 +106,7 @@ ros2 launch nav_kit_bringup nav_kit.launch.py mode:=mapping
 ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav
 
 # 指定地图
-ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav map:=maps/my_map
+ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav map:=maps/example/my_map
 
 # 真机
 ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav use_sim_time:=false

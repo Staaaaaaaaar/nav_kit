@@ -8,7 +8,6 @@ __pycache__/
 .cursor/
 frames_*.gv
 frames_*.pdf
-maps/**/*.pgm
-maps/**/*.yaml
-maps/**/*.data
-maps/**/*.posegraph
+
+# User map data under nav_kit_config (SLAM + Nav2 occupancy grid)
+src/nav_kit_config/maps/**
