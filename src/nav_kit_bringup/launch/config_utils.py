@@ -38,11 +38,11 @@ def params_file_path(params_file: str) -> str:
     return os.path.join(config_share_dir(), "params", params_file)
 
 
-def profile_context_yaml(profile: dict[str, Any]) -> str:
+def profile_context_yaml(profile: dict[str, Any], use_sim_time: bool = False) -> str:
     return yaml.dump(
         {
             "frames": profile.get("frames", {}),
-            "use_sim_time": profile.get("use_sim_time", False),
+            "use_sim_time": use_sim_time,
         },
         default_flow_style=True,
     )

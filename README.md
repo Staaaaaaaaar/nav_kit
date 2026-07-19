@@ -49,9 +49,20 @@ slam / amcl / nav2
 
 | 层级 | 路径 | 职责 |
 |------|------|------|
-| profile | `profiles/*.yaml` | footprint、frames、`use_sim_time` |
+| profile | `profiles/quadrover.yaml` | footprint、frames |
 | mode | `modes/*.yaml` | 启停模块、params 文件、默认地图 |
 | params | `params/*.yaml` | 话题、frame、算法参数 |
+| launch | `use_sim_time` | 仿真 `true`（默认），真机 `false` |
+
+### profile 示例（`profiles/quadrover.yaml`）
+
+```yaml
+footprint: [[0.3, 0.2], [0.3, -0.2], [-0.3, -0.2], [-0.3, 0.2]]
+frames:
+  map: map
+  odom: odom
+  base: base_link
+```
 
 ### params 文件
 
@@ -80,20 +91,20 @@ slam / amcl / nav2
 先启动仿真或真机，再：
 
 ```bash
-# SLAM 建图
-ros2 launch nav_kit_bringup nav_kit.launch.py mode:=mapping profile:=quadrover_sim
+# SLAM 建图（仿真，use_sim_time 默认 true）
+ros2 launch nav_kit_bringup nav_kit.launch.py mode:=mapping
 
 # 已知地图导航
-ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav profile:=quadrover_sim
+ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav
 
-# 指定地图（相对 nav_kit_config/share 或绝对路径）
-ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav profile:=quadrover_sim map:=maps/my_map
+# 指定地图
+ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav map:=maps/my_map
 
 # 真机
-ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav profile:=quadrover_real
+ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav use_sim_time:=false
 ```
 
-关闭 RViz：`use_rviz:=false`
+`profile` 默认为 `quadrover`，一般无需指定。关闭 RViz：`use_rviz:=false`
 
 ### 建图流程
 
