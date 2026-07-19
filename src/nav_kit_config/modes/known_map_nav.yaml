@@ -1,0 +1,7 @@
+# 已知地图导航：laserscan + interface + AMCL + Nav2
+map: maps/my_map
+modules:
+  laserscan: laserscan.yaml
+  interface: interface_nav.yaml
+  amcl: amcl_indoor.yaml
+  nav2: nav2_indoor.yaml

@@ -35,7 +35,7 @@ def _launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     return LaunchDescription(
         [
-            DeclareLaunchArgument("params_file", default_value="interface_phase1.yaml"),
+            DeclareLaunchArgument("params_file", default_value="interface_nav.yaml"),
             DeclareLaunchArgument("profile_context_yaml", default_value="{}"),
             OpaqueFunction(function=_launch_setup),
         ]

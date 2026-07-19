@@ -1,4 +1,0 @@
-# 真机 Phase 1：laserscan + interface（/odom/estimator → /odom）
-modules:
-  laserscan: laserscan.yaml
-  interface: interface_phase1_real.yaml

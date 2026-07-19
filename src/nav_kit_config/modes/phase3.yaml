@@ -1,6 +1,0 @@
-# 兼容别名，等同 mapping 模式
-map: maps/quadrover/indoor
-modules:
-  laserscan: laserscan.yaml
-  interface: interface_mapping.yaml
-  slam: slam_mapping.yaml

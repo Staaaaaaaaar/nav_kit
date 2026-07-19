@@ -1,4 +1,0 @@
-# Phase 1：laserscan + interface（/scan + /odom + odom→base TF）
-modules:
-  laserscan: laserscan.yaml
-  interface: interface_phase1.yaml

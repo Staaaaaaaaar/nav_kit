@@ -10,7 +10,7 @@ from launch_ros.actions import SetParameter
 from ament_index_python.packages import get_package_share_directory
 
 sys.path.insert(0, os.path.join(get_package_share_directory("nav_kit_bringup"), "launch"))
-from config_utils import load_mode, load_profile, profile_context_yaml, resolve_map_path  # noqa: E402
+from config_utils import load_mode, load_profile, profile_context_yaml, resolve_map_yaml  # noqa: E402
 
 
 def _launch_setup(context, *args, **kwargs):
@@ -23,9 +23,7 @@ def _launch_setup(context, *args, **kwargs):
     mode = load_mode(mode_name)
     context_yaml = profile_context_yaml(profile)
 
-    map_path = map_override or mode.get("map", "")
-    if map_path:
-        map_path = resolve_map_path(map_path)
+    map_path = resolve_map_yaml(map_override or mode.get("map", ""))
 
     bringup_share = get_package_share_directory("nav_kit_bringup")
     actions = []
@@ -44,7 +42,7 @@ def _launch_setup(context, *args, **kwargs):
         }
         if map_path:
             launch_arguments["map_path"] = map_path
-        if module_name == "slam":
+        if module_name in ("slam", "nav2"):
             launch_arguments["use_rviz"] = use_rviz
 
         actions.append(
@@ -60,7 +58,7 @@ def _launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     return LaunchDescription(
         [
-            DeclareLaunchArgument("mode", default_value="phase1"),
+            DeclareLaunchArgument("mode", default_value="mapping"),
             DeclareLaunchArgument("profile", default_value="quadrover_sim"),
             DeclareLaunchArgument("map", default_value=""),
             DeclareLaunchArgument("use_rviz", default_value="true"),

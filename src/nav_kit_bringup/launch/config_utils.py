@@ -34,6 +34,10 @@ def load_params(params_file: str) -> dict[str, Any]:
     return load_yaml(params_path)
 
 
+def params_file_path(params_file: str) -> str:
+    return os.path.join(config_share_dir(), "params", params_file)
+
+
 def profile_context_yaml(profile: dict[str, Any]) -> str:
     return yaml.dump(
         {
@@ -50,3 +54,18 @@ def resolve_map_path(map_value: str | None) -> str:
     if os.path.isabs(map_value):
         return map_value
     return os.path.join(config_share_dir(), map_value)
+
+
+def resolve_map_yaml(map_value: str | None) -> str:
+    """Resolve mode map entry to an occupancy grid yaml file path."""
+    path = resolve_map_path(map_value)
+    if not path:
+        return ""
+    if path.endswith((".yaml", ".yml")):
+        return path
+    yaml_path = f"{path}.yaml"
+    if os.path.isfile(yaml_path):
+        return yaml_path
+    if os.path.isfile(path):
+        return path
+    return yaml_path

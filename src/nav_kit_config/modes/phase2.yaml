@@ -1,4 +1,0 @@
-# Phase 2：laserscan + interface（+ /loc + map→odom TF）
-modules:
-  laserscan: laserscan.yaml
-  interface: interface_phase2.yaml
