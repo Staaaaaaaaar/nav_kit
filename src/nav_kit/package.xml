@@ -3,7 +3,7 @@
 <package format="3">
   <name>nav_kit</name>
   <version>0.1.0</version>
-  <description>nav_kit interface relay nodes for topic and frame normalization</description>
+  <description>nav_kit nodes for topic, dynamic frame, and static transform normalization</description>
   <maintainer email="sam@todo.todo">sam</maintainer>
   <license>Apache-2.0</license>
 

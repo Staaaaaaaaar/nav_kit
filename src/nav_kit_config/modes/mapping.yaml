@@ -3,6 +3,7 @@
 map: maps/slam
 rviz_config: slam_mapping.rviz
 modules:
+  static_tf: static_tf.yaml
   laserscan: laserscan.yaml
   interface: interface_mapping.yaml
   slam: slam_mapping.yaml

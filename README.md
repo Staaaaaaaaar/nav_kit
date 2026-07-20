@@ -6,9 +6,9 @@
 
 | mode | 用途 | 定位 | 模块 |
 |------|------|------|------|
-| `mapping` | SLAM 建图 | slam_toolbox | laserscan + interface + slam |
-| `unknown_map_nav` | 未知地图导航 | slam_toolbox | laserscan + interface + slam + nav2 |
-| `known_map_nav` | 已知地图导航 | AMCL | laserscan + interface + amcl + nav2 |
+| `mapping` | SLAM 建图 | slam_toolbox | static_tf + laserscan + interface + slam |
+| `unknown_map_nav` | 未知地图导航 | slam_toolbox | static_tf + laserscan + interface + slam + nav2 |
+| `known_map_nav` | 已知地图导航 | AMCL | static_tf + laserscan + interface + amcl + nav2 |
 
 ## 快速开始
 
@@ -24,12 +24,13 @@ source install/setup.bash
 
 ```text
 外部环境（仿真 / 真机）
-    ↓ params 中写明的 input_topic
-laserscan（pointcloud_to_laserscan → /scan）
-    ↓
-interface（topic_relay → /odom + TF）
-    ↓
-slam / amcl / nav2
+    ├── 传感器 / 定位话题
+    │       ↓ params 中写明的 input_topic
+    │   laserscan + interface
+    │       ↓ /scan、/odom 与动态 TF
+    │   slam / amcl / nav2
+    │
+    └── static_tf（按配置补齐真机缺失的固定坐标变换）
 ```
 
 ### TF 分工
@@ -40,6 +41,8 @@ slam / amcl / nav2
 | `known_map_nav` | interface | AMCL |
 
 `map→odom` 只能由一个模块发布：**slam_toolbox 与 AMCL 不可同时运行**。
+传感器等固定 frame 由机器人驱动、`robot_state_publisher` 或 `static_tf` 发布，
+同一变换只能保留一个发布源。
 
 ### 配置分层
 
@@ -60,8 +63,27 @@ slam / amcl / nav2
 | `slam_mapping.yaml` | slam_toolbox（建图与未知地图导航共用） |
 | `amcl_indoor.yaml` | AMCL + map_server |
 | `nav2_indoor.yaml` | Nav2 规划与控制 |
+| `static_tf.yaml` | 真机缺失的静态 TF（可配置任意多条） |
 
 仿真与真机差异：修改 `interface_*.yaml` 中的 `input_topic`。
+
+### 静态 TF 配置
+
+所有 mode 默认都会启动 `static_tf` 模块。编辑 `params/static_tf.yaml` 的
+`transforms` 数组即可补齐任意多个固定变换；未配置 `transforms` 时节点不会发布 TF。
+
+```yaml
+static_tf_publisher:
+  ros__parameters:
+    # parent child x y z roll pitch yaw
+    # 平移单位：米；旋转单位：弧度
+    transforms:
+      - "base_link lidar_link 0.20 0.0 0.30 0.0 0.0 0.0"
+      - "base_link imu_link 0.00 0.0 0.10 0.0 0.0 1.5708"
+```
+
+每个 child frame 只能配置一次。不要配置已由机器人驱动、
+`robot_state_publisher`、SLAM 或 AMCL 发布的变换，否则 TF 会产生冲突。
 
 ### 地图文件
 
@@ -158,7 +180,7 @@ ros2 launch nav_kit_bringup nav_kit.launch.py mode:=unknown_map_nav use_sim_time
 nav_kit/
 ├── scripts/              # install / build / save_map
 ├── src/
-│   ├── nav_kit/          # topic_relay
+│   ├── nav_kit/          # topic_relay / static_tf_publisher
 │   ├── nav_kit_bringup/  # launch
 │   └── nav_kit_config/   # profiles / modes / params / rviz
 └── README.md

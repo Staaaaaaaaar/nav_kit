@@ -19,7 +19,11 @@ add_executable(topic_relay src/interface/topic_relay.cpp)
 ament_target_dependencies(topic_relay
   rclcpp nav_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs)
 
-install(TARGETS topic_relay
+add_executable(static_tf_publisher src/tf/static_tf_publisher.cpp)
+ament_target_dependencies(static_tf_publisher
+  rclcpp geometry_msgs tf2 tf2_ros)
+
+install(TARGETS topic_relay static_tf_publisher
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

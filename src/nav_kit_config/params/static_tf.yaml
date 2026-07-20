@@ -1,0 +1,8 @@
+static_tf_publisher:
+  ros__parameters:
+    # 每项格式："parent_frame child_frame x y z roll pitch yaw"
+    # 平移单位为米，旋转单位为弧度。例如：
+    # transforms:
+    #   - "base_link lidar_link 0.20 0.0 0.30 0.0 0.0 0.0"
+    #   - "base_link imu_link 0.00 0.0 0.10 0.0 0.0 1.5708"
+    # 未配置 transforms 时不发布静态 TF。
