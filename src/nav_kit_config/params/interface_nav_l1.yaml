@@ -1,0 +1,10 @@
+# Replace /odom/filtered with the L1 fused LiDAR-inertial/visual-inertial odometry topic.
+# If that source already publishes odom->base_link, set publish_tf to none to avoid duplicates.
+topic_relay_odom:
+  ros__parameters:
+    input_topic: /odom/filtered
+    msg_type: odometry
+    output_topic: /odom
+    parent_frame: odom
+    child_frame: base_link
+    publish_tf: odom_base

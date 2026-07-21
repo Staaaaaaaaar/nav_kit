@@ -1,0 +1,10 @@
+# L1 outdoor mapping on real hardware.
+profile: l1
+use_sim_time: false
+map: maps/l1/slam
+rviz_config: slam_mapping.rviz
+modules:
+  static_tf: static_tf_l1.yaml
+  laserscan: laserscan_l1.yaml
+  interface: interface_mapping_l1.yaml
+  slam: slam_mapping_l1.yaml

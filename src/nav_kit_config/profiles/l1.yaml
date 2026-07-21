@@ -1,0 +1,7 @@
+# L1 quadruped: conservative body envelope for outdoor navigation.
+# Measure the deployed robot (including payload) and update this footprint.
+footprint: [[0.38, 0.23], [0.38, -0.23], [-0.38, -0.23], [-0.38, 0.23]]
+frames:
+  map: map
+  odom: odom
+  base: base_link

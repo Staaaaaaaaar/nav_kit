@@ -1,6 +1,8 @@
 # 未知地图导航：边建图边定位边导航
 # TF：odom→base 由 interface；map→odom 由 slam_toolbox（无 AMCL）
 # map 字段仅作 save_map 目录提示
+profile: quadrover
+use_sim_time: true
 map: maps/slam
 rviz_config: nav_unknown_map.rviz
 modules:

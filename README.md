@@ -10,6 +10,9 @@
 | `unknown_map_nav` | 未知地图导航 | slam_toolbox | static_tf + laserscan + interface + slam + nav2 |
 | `known_map_nav` | 已知地图导航 | AMCL | static_tf + laserscan + interface + amcl + nav2 |
 
+机器狗 L1 使用对应的 `mapping_l1`、`unknown_map_nav_l1`、
+`known_map_nav_l1` mode；这些 mode 会自动选择 `profiles/l1.yaml` 和 `_l1` 参数集。
+
 ## 快速开始
 
 ```bash
@@ -48,10 +51,10 @@ source install/setup.bash
 
 | 层级 | 职责 |
 |------|------|
-| `profiles/quadrover.yaml` | footprint、frames |
-| `modes/*.yaml` | 模块列表、params、`rviz_config`、默认地图路径 |
+| `profiles/*.yaml` | footprint、frames |
+| `modes/*.yaml` | 默认 profile/时钟、模块列表、params、`rviz_config`、地图路径 |
 | `params/*.yaml` | 话题、frame、算法参数 |
-| launch `use_sim_time` | 仿真 `true`（默认），真机 `false` |
+| launch `use_sim_time` | 可覆盖 mode 默认时钟；通用 mode 为 `true`，L1 为 `false` |
 
 ### params 一览
 
@@ -64,6 +67,10 @@ source install/setup.bash
 | `amcl_indoor.yaml` | AMCL + map_server |
 | `nav2_indoor.yaml` | Nav2 规划与控制 |
 | `static_tf.yaml` | 真机缺失的静态 TF（可配置任意多条） |
+
+L1 使用同名 `_l1` 参数文件。其中 `nav2_l1.yaml` 使用 MPPI Omni 控制器、
+SmacPlanner2D、全向 AMCL 运动模型配套的室外 costmap；`slam_mapping_l1.yaml`
+提高了扫描匹配密度并启用长距离轨迹所需的回环检测。
 
 仿真与真机差异：修改 `interface_*.yaml` 中的 `input_topic`。
 
@@ -99,6 +106,7 @@ mkdir -p src/nav_kit_config/maps/example
 |------|------|----------|
 | SLAM 序列图 | `.posegraph` + `.data` | `maps/slam/` |
 | 已知地图导航 | `.yaml` + `.pgm` | `maps/example/map` |
+| L1 SLAM / 已知地图 | 同上 | `maps/l1/slam` / `maps/l1/map` |
 
 ## 启动命令
 
@@ -119,7 +127,52 @@ ros2 launch nav_kit_bringup nav_kit.launch.py mode:=known_map_nav map:=maps/exam
 ros2 launch nav_kit_bringup nav_kit.launch.py mode:=unknown_map_nav use_sim_time:=false
 ```
 
-可选参数：`use_rviz:=false`、`profile:=quadrover`（默认）
+可选参数：`use_rviz:=false`、`profile:=...`、`use_sim_time:=...`。未显式指定时
+使用 mode 中的默认值；通用 mode 使用 `quadrover`/仿真时钟，L1 mode 使用
+`l1`/系统时钟。
+
+## L1 机器狗真机
+
+### 部署前必须确认
+
+默认配置假设机器狗驱动提供：
+
+| 接口 | 默认值 | 要求 |
+|------|--------|------|
+| 地面过滤点云 | `/lidar/points_filtered` | `sensor_msgs/PointCloud2`，保留可碰撞物、去除地面 |
+| 融合里程计 | `/odom/filtered` | `nav_msgs/Odometry`，建议 LiDAR/视觉惯性融合 |
+| 速度指令 | `/cmd_vel` | 支持 `linear.x`、`linear.y`、`angular.z` |
+| TF | `map→odom→base_link` | 只能有一个发布源；传感器固定 TF 必须完整 |
+
+按实际驱动修改 `laserscan_l1.yaml`、`interface_*_l1.yaml`，测量包含载荷后的
+机身外廓并同步修改 `profiles/l1.yaml` 与 `nav2_l1.yaml` 中的 footprint。
+在 `static_tf_l1.yaml` 中只补充驱动或 URDF 未发布的固定变换。
+如果融合里程计自身已经发布 `odom→base_link`，应将 `interface_*_l1.yaml` 的
+`publish_tf` 改为 `none`，避免重复 TF。
+
+> 本仓库使用 2D costmap。室外坡地、台阶和负障碍不能仅凭投影后的 `/scan`
+> 判断可通行性；送入本工具前必须完成地面分割/地形过滤，并保留独立急停与真机限速。
+
+### 启动
+
+```bash
+# 室外建图
+ros2 launch nav_kit_bringup nav_kit.launch.py \
+  mode:=mapping_l1 use_sim_time:=false
+
+# 已探索区域内边建图边导航
+ros2 launch nav_kit_bringup nav_kit.launch.py \
+  mode:=unknown_map_nav_l1 use_sim_time:=false
+
+# 保存地图上的高精度 AMCL 导航
+ros2 launch nav_kit_bringup nav_kit.launch.py \
+  mode:=known_map_nav_l1 use_sim_time:=false map:=maps/l1/map
+```
+
+首次上车应架空或低速测试横移方向和急停，再从空旷区域开始。默认速度上限为
+前进 `0.8 m/s`、后退 `0.5 m/s`、横移 `0.6 m/s`、转动 `1.2 rad/s`；
+目标容差为 `0.10 m / 0.10 rad`。先校准里程计、TF、footprint 和时间同步，
+再调整 MPPI critic 权重；不要通过继续缩小目标容差掩盖定位漂移。
 
 ### 建图
 
@@ -169,6 +222,8 @@ ros2 launch nav_kit_bringup nav_kit.launch.py mode:=unknown_map_nav use_sim_time
 ### Goal 到达精度
 
 在 `nav2_indoor.yaml` 的 `general_goal_checker` 中调整 `xy_goal_tolerance`（米）与 `yaw_goal_tolerance`（弧度）。
+L1 对应 `nav2_l1.yaml` 的 `precise_goal_checker`；实际精度上限首先取决于传感器标定、
+时间同步、里程计和全局定位质量。
 
 ### `/loc/gazebo` 误用
 

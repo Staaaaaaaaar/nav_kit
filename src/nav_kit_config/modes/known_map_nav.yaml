@@ -1,4 +1,6 @@
 # 已知地图导航：laserscan + interface + AMCL + Nav2
+profile: quadrover
+use_sim_time: true
 map: maps/example/map
 rviz_config: nav_known_map.rviz
 modules:

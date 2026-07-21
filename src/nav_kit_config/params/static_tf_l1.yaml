@@ -1,0 +1,7 @@
+static_tf_publisher:
+  ros__parameters:
+    # Add only transforms not already published by the L1 driver/URDF.
+    # Measure the real sensor mount before enabling an entry.
+    # Format: "parent_frame child_frame x y z roll pitch yaw" (metres/radians)
+    # transforms:
+    #   - "base_link lidar_link 0.25 0.0 0.20 0.0 0.0 0.0"

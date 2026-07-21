@@ -18,14 +18,20 @@ def _parse_bool(value: str) -> bool:
 
 
 def _launch_setup(context, *args, **kwargs):
-    profile_name = LaunchConfiguration("profile").perform(context)
     mode_name = LaunchConfiguration("mode").perform(context)
+    profile_override = LaunchConfiguration("profile").perform(context)
     map_override = LaunchConfiguration("map").perform(context)
     use_rviz_val = LaunchConfiguration("use_rviz").perform(context)
-    use_sim_time = _parse_bool(LaunchConfiguration("use_sim_time").perform(context))
+    use_sim_time_override = LaunchConfiguration("use_sim_time").perform(context)
 
-    profile = load_profile(profile_name)
     mode = load_mode(mode_name)
+    profile_name = profile_override or mode.get("profile", "quadrover")
+    profile = load_profile(profile_name)
+    use_sim_time = (
+        _parse_bool(use_sim_time_override)
+        if use_sim_time_override
+        else bool(mode.get("use_sim_time", True))
+    )
     context_yaml = profile_context_yaml(profile, use_sim_time=use_sim_time)
 
     map_path = resolve_map_yaml(map_override or mode.get("map", ""))
@@ -73,9 +79,9 @@ def generate_launch_description():
     return LaunchDescription(
         [
             DeclareLaunchArgument("mode", default_value="mapping"),
-            DeclareLaunchArgument("profile", default_value="quadrover"),
+            DeclareLaunchArgument("profile", default_value=""),
             DeclareLaunchArgument("map", default_value=""),
-            DeclareLaunchArgument("use_sim_time", default_value="true"),
+            DeclareLaunchArgument("use_sim_time", default_value=""),
             DeclareLaunchArgument("use_rviz", default_value="true"),
             OpaqueFunction(function=_launch_setup),
         ]

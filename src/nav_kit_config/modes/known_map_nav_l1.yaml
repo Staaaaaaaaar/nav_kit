@@ -1,0 +1,11 @@
+# L1 localization and navigation on a saved outdoor map.
+profile: l1
+use_sim_time: false
+map: maps/l1/map
+rviz_config: nav_known_map.rviz
+modules:
+  static_tf: static_tf_l1.yaml
+  laserscan: laserscan_l1.yaml
+  interface: interface_nav_l1.yaml
+  amcl: amcl_l1.yaml
+  nav2: nav2_l1.yaml
