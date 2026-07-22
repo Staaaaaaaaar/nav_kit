@@ -97,16 +97,25 @@ static_tf_publisher:
 `src/nav_kit_config/maps/` 已 **gitignore**，本地存放，不入库。
 
 ```bash
-mkdir -p src/nav_kit_config/maps/example
-# 已知地图导航：map.yaml + map.pgm
-# 建图保存：maps/slam/*.posegraph / *.data
+./scripts/save_map.sh
+# 默认保存：src/nav_kit_config/maps/<当前 profile>/map.yaml + map.pgm
 ```
 
 | 用途 | 格式 | 默认路径 |
 |------|------|----------|
-| SLAM 序列图 | `.posegraph` + `.data` | `maps/slam/` |
+| 建图保存 | `.yaml` + `.pgm` | `maps/<profile>/map` |
 | 已知地图导航 | `.yaml` + `.pgm` | `maps/example/map` |
-| L1 SLAM / 已知地图 | 同上 | `maps/l1/slam` / `maps/l1/map` |
+| L1 建图 / 已知地图 | 同上 | `maps/l1/map` |
+
+建图类 mode 不配置保存路径。`save_map.sh` 会从正在运行的 `topic_relay_odom`
+读取 profile；无法读取时回退为 `quadrover`。也可以显式指定 profile、目录和文件名：
+
+```bash
+./scripts/save_map.sh --profile l1
+./scripts/save_map.sh --output-dir /data/maps --map-name campus
+# 兼容旧位置参数：MAP_NAME OUTPUT_DIR
+./scripts/save_map.sh campus /data/maps
+```
 
 ## 启动命令
 
@@ -177,7 +186,7 @@ ros2 launch nav_kit_bringup nav_kit.launch.py \
 ### 建图
 
 1. 启动 `mapping`，遥控覆盖环境
-2. `./scripts/save_map.sh` 保存 SLAM 序列图
+2. `./scripts/save_map.sh` 保存栅格地图；默认输出到当前 profile 的 `map.yaml` 与 `map.pgm`
 
 ### 未知地图导航
 
@@ -199,7 +208,7 @@ ros2 launch nav_kit_bringup nav_kit.launch.py \
 |------|------|
 | `install_deps.sh` | 安装 apt 依赖 |
 | `build.sh` | colcon 编译 |
-| `save_map.sh` | 保存 SLAM 序列图 |
+| `save_map.sh` | 保存栅格地图，支持自定义 profile、目录和文件名 |
 
 ## 常见问题
 

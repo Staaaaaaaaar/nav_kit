@@ -16,7 +16,6 @@ from config_utils import load_params  # noqa: E402
 def _launch_setup(context, *args, **kwargs):
     params_file = LaunchConfiguration("params_file").perform(context)
     profile_context_yaml = LaunchConfiguration("profile_context_yaml").perform(context)
-    map_path = LaunchConfiguration("map_path").perform(context)
     use_rviz = LaunchConfiguration("use_rviz")
     rviz_config_file = LaunchConfiguration("rviz_config").perform(context) or "slam_mapping.rviz"
 
@@ -51,9 +50,6 @@ def _launch_setup(context, *args, **kwargs):
             )
         )
 
-    if map_path:
-        print(f"[slam] map save directory hint: {map_path}")
-
     nodes.append(
         Node(
             package="rviz2",
@@ -73,7 +69,6 @@ def generate_launch_description():
         [
             DeclareLaunchArgument("params_file", default_value="slam_mapping.yaml"),
             DeclareLaunchArgument("profile_context_yaml", default_value="{}"),
-            DeclareLaunchArgument("map_path", default_value=""),
             DeclareLaunchArgument("use_rviz", default_value="true"),
             DeclareLaunchArgument("rviz_config", default_value="slam_mapping.rviz"),
             OpaqueFunction(function=_launch_setup),

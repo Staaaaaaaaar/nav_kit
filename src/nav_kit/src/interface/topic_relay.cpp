@@ -26,6 +26,7 @@ public:
     odom_topic_ = declare_parameter<std::string>("odom_topic", "/odom");
     map_frame_ = declare_parameter<std::string>("map_frame", "map");
     odom_frame_ = declare_parameter<std::string>("odom_frame", "odom");
+    declare_parameter<std::string>("nav_kit_profile", "");
 
     if (msg_type_ != "pose") {
       msg_type_ = "odometry";
@@ -134,7 +135,6 @@ private:
   std::string odom_topic_;
   std::string map_frame_;
   std::string odom_frame_;
-
   bool has_odom_{false};
   nav_msgs::msg::Odometry latest_odom_;
 

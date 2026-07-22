@@ -32,7 +32,9 @@ def _launch_setup(context, *args, **kwargs):
         if use_sim_time_override
         else bool(mode.get("use_sim_time", True))
     )
-    context_yaml = profile_context_yaml(profile, use_sim_time=use_sim_time)
+    context_yaml = profile_context_yaml(
+        profile, use_sim_time=use_sim_time, profile_name=profile_name
+    )
 
     map_path = resolve_map_yaml(map_override or mode.get("map", ""))
 

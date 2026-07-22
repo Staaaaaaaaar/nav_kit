@@ -2,7 +2,6 @@
 # TF：odom→base 由 interface；map→odom 由 slam_toolbox
 profile: quadrover
 use_sim_time: true
-map: maps/slam
 rviz_config: slam_mapping.rviz
 modules:
   static_tf: static_tf.yaml
