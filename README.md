@@ -150,7 +150,7 @@ ros2 launch nav_kit_bringup nav_kit.launch.py mode:=unknown_map_nav use_sim_time
 |------|--------|------|
 | 地面过滤点云 | `/lidar/points_filtered` | `sensor_msgs/PointCloud2`，保留可碰撞物、去除地面 |
 | 融合里程计 | `/odom/filtered` | `nav_msgs/Odometry`，建议 LiDAR/视觉惯性融合 |
-| 速度指令 | `/cmd_vel` | 支持 `linear.x`、`linear.y`、`angular.z` |
+| 速度指令 | `/cmd_vel` | 支持 `linear.x`、`linear.y`、`angular.z`，停止时三个分量必须为 `0` |
 | TF | `map→odom→base_link` | 只能有一个发布源；传感器固定 TF 必须完整 |
 
 按实际驱动修改 `laserscan_l1.yaml`、`interface_*_l1.yaml`，测量包含载荷后的
@@ -179,9 +179,17 @@ ros2 launch nav_kit_bringup nav_kit.launch.py \
 ```
 
 首次上车应架空或低速测试横移方向和急停，再从空旷区域开始。默认速度上限为
-前进 `0.8 m/s`、后退 `0.5 m/s`、横移 `0.6 m/s`、转动 `1.2 rad/s`；
-目标容差为 `0.10 m / 0.10 rad`。先校准里程计、TF、footprint 和时间同步，
-再调整 MPPI critic 权重；不要通过继续缩小目标容差掩盖定位漂移。
+前进 `0.4 m/s`、后退 `0.2 m/s`、横移 `0.2 m/s`、转动 `0.6 rad/s`；
+目标容差为 `0.10 m / 0.10 rad`。L1 驱动接受的最小非零速度为前后
+`0.05 m/s`、横移 `0.10 m/s`、转动 `0.02 rad/s`，对应配置在
+`nav2_l1.yaml` 的 `VelocityDeadbandCritic.deadband_velocities` 和
+`velocity_smoother.deadband_velocity`。
+
+整体导航速度主要由 `FollowPath` 下的 `vx_max`、`vx_min`、`vy_max`、`wz_max`
+决定；`velocity_smoother` 的 `max_velocity`、`min_velocity` 是发布到真机前的最终
+硬限制。调整速度时应同步修改这两组值，并优先保持两处限制一致。
+先校准里程计、TF、footprint 和时间同步，再调整 MPPI critic 权重；不要通过继续
+缩小目标容差掩盖定位漂移。
 
 ### 建图
 
