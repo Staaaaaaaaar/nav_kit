@@ -20,7 +20,7 @@ def _launch_setup(context, *args, **kwargs):
 
     return [
         Node(
-            package="nav_kit",
+            package="navforge",
             executable="static_tf_publisher",
             name="static_tf_publisher",
             output="screen",

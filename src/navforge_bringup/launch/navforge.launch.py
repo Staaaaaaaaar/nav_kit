@@ -9,7 +9,7 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import SetParameter
 from ament_index_python.packages import get_package_share_directory
 
-sys.path.insert(0, os.path.join(get_package_share_directory("nav_kit_bringup"), "launch"))
+sys.path.insert(0, os.path.join(get_package_share_directory("navforge_bringup"), "launch"))
 from config_utils import load_mode, load_profile, profile_context_yaml, resolve_map_yaml  # noqa: E402
 
 
@@ -38,7 +38,7 @@ def _launch_setup(context, *args, **kwargs):
 
     map_path = resolve_map_yaml(map_override or mode.get("map", ""))
 
-    bringup_share = get_package_share_directory("nav_kit_bringup")
+    bringup_share = get_package_share_directory("navforge_bringup")
     actions = []
     module_names = list(mode.get("modules", {}).keys())
     has_nav2 = "nav2" in module_names

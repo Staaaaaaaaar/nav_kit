@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install apt dependencies for nav_kit (ROS 2 Humble on Ubuntu 22.04).
+# Install apt dependencies for NavForge (ROS 2 Humble on Ubuntu 22.04).
 set -euo pipefail
 
 ROS_DISTRO="${ROS_DISTRO:-humble}"
@@ -31,7 +31,7 @@ PACKAGES=(
   ros-${ROS_DISTRO}-nav2-bringup
 )
 
-echo "Installing all nav_kit dependencies for ROS ${ROS_DISTRO}..."
+echo "Installing all NavForge dependencies for ROS ${ROS_DISTRO}..."
 sudo apt update
 sudo apt install -y "${PACKAGES[@]}"
 echo "Done. Next: ./scripts/build.sh && source install/setup.bash"

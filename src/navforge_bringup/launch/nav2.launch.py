@@ -27,7 +27,7 @@ def _launch_setup(context, *args, **kwargs):
     nav2_bringup_dir = get_package_share_directory("nav2_bringup")
     navigation_launch = os.path.join(nav2_bringup_dir, "launch", "navigation_launch.py")
     rviz_config = os.path.join(
-        get_package_share_directory("nav_kit_config"),
+        get_package_share_directory("navforge_config"),
         "rviz",
         rviz_config_file,
     )

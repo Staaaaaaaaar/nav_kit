@@ -1,4 +1,4 @@
-"""Load nav_kit_config YAML files for launch files."""
+"""Load navforge_config YAML files for launch files."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def config_share_dir() -> str:
-    return get_package_share_directory("nav_kit_config")
+    return get_package_share_directory("navforge_config")
 
 
 def load_yaml(path: str) -> dict[str, Any]:

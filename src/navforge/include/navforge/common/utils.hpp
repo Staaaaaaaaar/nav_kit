@@ -1,5 +1,5 @@
-#ifndef NAV_KIT__COMMON__UTILS_HPP_
-#define NAV_KIT__COMMON__UTILS_HPP_
+#ifndef NAVFORGE__COMMON__UTILS_HPP_
+#define NAVFORGE__COMMON__UTILS_HPP_
 
 #include <string>
 
@@ -8,7 +8,7 @@
 #include "tf2/LinearMath/Transform.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
-namespace nav_kit
+namespace navforge
 {
 namespace utils
 {
@@ -47,6 +47,6 @@ inline tf2::Transform pose_to_transform(const geometry_msgs::msg::Pose & pose)
 }
 
 }  // namespace utils
-}  // namespace nav_kit
+}  // namespace navforge
 
-#endif  // NAV_KIT__COMMON__UTILS_HPP_
+#endif  // NAVFORGE__COMMON__UTILS_HPP_

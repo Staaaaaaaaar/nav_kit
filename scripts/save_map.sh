@@ -21,7 +21,7 @@ Usage: ./scripts/save_map.sh [OPTIONS] [MAP_NAME] [OUTPUT_DIR]
 
 Save the current slam_toolbox occupancy map. By default, the active profile is
 read from topic_relay and the map is saved as:
-  src/nav_kit_config/maps/<profile>/map.yaml
+  src/navforge_config/maps/<profile>/map.yaml
 
 Options:
   -p, --profile PROFILE    Select the profile directory explicitly
@@ -92,13 +92,13 @@ fi
 
 if [ -z "$MAP_DIR" ]; then
   if [ -z "$PROFILE" ]; then
-    PROFILE_OUTPUT="$(ros2 param get /topic_relay_odom nav_kit_profile 2>/dev/null || true)"
+    PROFILE_OUTPUT="$(ros2 param get /topic_relay_odom navforge_profile 2>/dev/null || true)"
     case "$PROFILE_OUTPUT" in
       "String value is: "*) PROFILE="${PROFILE_OUTPUT#String value is: }" ;;
     esac
   fi
   PROFILE="${PROFILE:-quadrover}"
-  MAP_DIR="${REPO_ROOT}/src/nav_kit_config/maps/${PROFILE}"
+  MAP_DIR="${REPO_ROOT}/src/navforge_config/maps/${PROFILE}"
 fi
 
 mkdir -p "$MAP_DIR"

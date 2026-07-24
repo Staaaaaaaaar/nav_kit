@@ -22,10 +22,10 @@ def _launch_setup(context, *args, **kwargs):
         if not node_name.startswith("topic_relay"):
             continue
         node_params = node_block.get("ros__parameters", {})
-        node_params.setdefault("nav_kit_profile", profile_context.get("profile", ""))
+        node_params.setdefault("navforge_profile", profile_context.get("profile", ""))
         nodes.append(
             Node(
-                package="nav_kit",
+                package="navforge",
                 executable="topic_relay",
                 name=node_name,
                 output="screen",

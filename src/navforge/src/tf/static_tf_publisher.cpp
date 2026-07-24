@@ -12,7 +12,7 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/static_transform_broadcaster.h"
 
-namespace nav_kit
+namespace navforge
 {
 
 class StaticTfPublisher : public rclcpp::Node
@@ -108,13 +108,13 @@ private:
   tf2_ros::StaticTransformBroadcaster broadcaster_;
 };
 
-}  // namespace nav_kit
+}  // namespace navforge
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   try {
-    rclcpp::spin(std::make_shared<nav_kit::StaticTfPublisher>());
+    rclcpp::spin(std::make_shared<navforge::StaticTfPublisher>());
   } catch (const std::exception & error) {
     RCLCPP_FATAL(rclcpp::get_logger("static_tf_publisher"), "%s", error.what());
     rclcpp::shutdown();

@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>nav_kit_bringup</name>
+  <name>navforge_bringup</name>
   <version>0.1.0</version>
-  <description>Launch files for nav_kit</description>
+  <description>Composable launch workflows for the NavForge navigation deployment framework</description>
   <maintainer email="sam@todo.todo">sam</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <exec_depend>nav_kit</exec_depend>
-  <exec_depend>nav_kit_config</exec_depend>
+  <exec_depend>navforge</exec_depend>
+  <exec_depend>navforge_config</exec_depend>
   <exec_depend>pointcloud_to_laserscan</exec_depend>
   <exec_depend>slam_toolbox</exec_depend>
   <exec_depend>nav2_bringup</exec_depend>

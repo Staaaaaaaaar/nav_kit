@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>nav_kit</name>
+  <name>navforge</name>
   <version>0.1.0</version>
-  <description>nav_kit nodes for topic, dynamic frame, and static transform normalization</description>
+  <description>Core normalization nodes for the NavForge navigation deployment framework</description>
   <maintainer email="sam@todo.todo">sam</maintainer>
   <license>Apache-2.0</license>
 

@@ -4,11 +4,11 @@
 
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-#include "nav_kit/common/utils.hpp"
+#include "navforge/common/utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 
-namespace nav_kit
+namespace navforge
 {
 
 class TopicRelay : public rclcpp::Node
@@ -26,7 +26,7 @@ public:
     odom_topic_ = declare_parameter<std::string>("odom_topic", "/odom");
     map_frame_ = declare_parameter<std::string>("map_frame", "map");
     odom_frame_ = declare_parameter<std::string>("odom_frame", "odom");
-    declare_parameter<std::string>("nav_kit_profile", "");
+    declare_parameter<std::string>("navforge_profile", "");
 
     if (msg_type_ != "pose") {
       msg_type_ = "odometry";
@@ -146,12 +146,12 @@ private:
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };
 
-}  // namespace nav_kit
+}  // namespace navforge
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<nav_kit::TopicRelay>());
+  rclcpp::spin(std::make_shared<navforge::TopicRelay>());
   rclcpp::shutdown();
   return 0;
 }

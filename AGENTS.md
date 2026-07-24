@@ -2,14 +2,15 @@
 
 ## Project Structure & Module Organization
 
-This is a ROS 2 Humble workspace for adapting Nav2 to simulation and real robots.
+NavForge is a ROS 2 Humble navigation deployment framework built around Nav2 for
+simulation and real mobile robots.
 
-- `src/nav_kit/`: C++ nodes. Interfaces live under `src/interface/`; TF utilities live under `src/tf/`; shared headers belong in `include/nav_kit/`.
-- `src/nav_kit_bringup/launch/`: Python launch files. `nav_kit.launch.py` selects a mode and includes module launch files.
-- `src/nav_kit_config/`: robot profiles, mode composition, node parameters, RViz configurations, and local maps.
+- `src/navforge/`: C++ nodes. Interfaces live under `src/interface/`; TF utilities live under `src/tf/`; shared headers belong in `include/navforge/`.
+- `src/navforge_bringup/launch/`: Python launch files. `navforge.launch.py` selects a mode and includes module launch files.
+- `src/navforge_config/`: robot profiles, mode composition, node parameters, RViz configurations, and local maps.
 - `scripts/`: dependency installation, workspace builds, and map-saving helpers.
 
-Keep algorithm parameters in `params/`, robot-specific frames in `profiles/`, and module selection in `modes/`. Map files under `src/nav_kit_config/maps/` are local data and are intentionally ignored.
+Keep algorithm parameters in `params/`, robot-specific frames in `profiles/`, and module selection in `modes/`. Map files under `src/navforge_config/maps/` are local data and are intentionally ignored.
 
 ## Build, Test, and Development Commands
 
@@ -17,14 +18,14 @@ Keep algorithm parameters in `params/`, robot-specific frames in `profiles/`, an
 ./scripts/install_deps.sh                 # Install ROS 2/Nav2 dependencies
 ./scripts/build.sh                        # Build with colcon and symlink install
 source install/setup.bash                 # Activate the built workspace
-colcon test --packages-select nav_kit nav_kit_bringup nav_kit_config
+colcon test --packages-select navforge navforge_bringup navforge_config
 colcon test-result --verbose              # Display test failures
 ```
 
 Run a representative mode after building:
 
 ```bash
-ros2 launch nav_kit_bringup nav_kit.launch.py \
+ros2 launch navforge_bringup navforge.launch.py \
   mode:=mapping use_sim_time:=true use_rviz:=false
 ```
 

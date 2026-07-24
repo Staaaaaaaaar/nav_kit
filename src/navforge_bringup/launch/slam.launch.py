@@ -23,7 +23,7 @@ def _launch_setup(context, *args, **kwargs):
     params = load_params(params_file)
     nodes = []
     rviz_config = os.path.join(
-        get_package_share_directory("nav_kit_config"),
+        get_package_share_directory("navforge_config"),
         "rviz",
         rviz_config_file,
     )

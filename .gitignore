@@ -9,5 +9,5 @@ __pycache__/
 frames_*.gv
 frames_*.pdf
 
-# User map data under nav_kit_config (SLAM + Nav2 occupancy grid)
-src/nav_kit_config/maps/**
+# User map data under navforge_config (SLAM + Nav2 occupancy grid)
+src/navforge_config/maps/**

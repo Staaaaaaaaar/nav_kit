@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>nav_kit_config</name>
+  <name>navforge_config</name>
   <version>0.1.0</version>
-  <description>Configuration files for nav_kit</description>
+  <description>Reusable robot profiles, modes, and Nav2 configurations for NavForge</description>
   <maintainer email="sam@todo.todo">sam</maintainer>
   <license>Apache-2.0</license>
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(nav_kit_config)
+project(navforge_config)
 
 find_package(ament_cmake REQUIRED)
 
