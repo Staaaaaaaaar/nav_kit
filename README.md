@@ -1,9 +1,6 @@
 # NavForge
 
-**ROS2 Navigation System Builder.**
-
-NavForge is a ROS2 navigation deployment framework built around Nav2, providing
-reusable configurations, dependencies and launch workflows for mobile robots.
+> NavForge is a ROS2 navigation deployment framework built around Nav2, providing reusable configurations, dependencies and launch workflows for mobile robots.
 
 NavForge 面向仿真与真实移动机器人提供可复用的 ROS 2 Humble 2D 导航部署能力。
 框架通过 profile、mode 和 params 组合构建导航系统；自研节点负责话题与 frame
