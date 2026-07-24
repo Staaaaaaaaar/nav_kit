@@ -95,7 +95,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
-      Target Frame: map
+      Target Frame: base_link
 Window Geometry:
   Height: 860
   Width: 1280

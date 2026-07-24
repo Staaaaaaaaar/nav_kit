@@ -1,7 +1,7 @@
 pointcloud_to_laserscan:
   ros__parameters:
-    # Use a ground-filtered cloud outdoors; raw terrain points can block the 2D costmap.
-    input_topic: /lidar/points_filtered
+    # Raw Livox points are height-sliced only; tune this window for terrain and low obstacles.
+    input_topic: /livox/lidar
     target_frame: base_link
     transform_tolerance: 0.05
     min_height: -0.15
